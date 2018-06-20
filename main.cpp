@@ -53,6 +53,8 @@ POINT ptCursor;
 HWND przyciskp;
 HWND przyciskd;
 
+NOTIFYICONDATA nid;
+
 bool zmiana_p;
 bool zmiana_d;
 
@@ -88,7 +90,7 @@ void func()
         }
         okno.clear( kolor );
 
-        if( zegar_func.getElapsedTime().asSeconds() > 2 && wylaczyc == false )
+        if( zegar_func.getElapsedTime().asSeconds() > 0.5 && wylaczyc == false )
         {
             wylaczyc = true;
             ShowWindow( okno.getSystemHandle(), SW_HIDE );
@@ -99,7 +101,7 @@ void func()
 
         okno.display();
 
-        Sleep( 200 );
+        Sleep( 10 );
         //sf::sleep( sf::seconds( 1 ) );
     }
 }
@@ -194,7 +196,6 @@ int WINAPI WinMain (HINSTANCE Instance,HINSTANCE hPrevInstance,LPSTR lpszArgumen
     LPSTR sTip = "Color Picker";
     LPSTR sTytul = "Uruchomiono";
     LPSTR sOpis = "Color Picker zosta³ uruchomiony";
-    NOTIFYICONDATA nid;
 
     nid.cbSize = sizeof( NOTIFYICONDATA );
     nid.hWnd = hwnd;
@@ -241,7 +242,7 @@ int WINAPI WinMain (HINSTANCE Instance,HINSTANCE hPrevInstance,LPSTR lpszArgumen
         }
         else
         {
-            if( GetAsyncKeyState( VK_CONTROL ) && GetAsyncKeyState( VK_CAPITAL ) && rob == false )
+            if( GetAsyncKeyState( VK_CONTROL ) && GetAsyncKeyState( VK_F1 ) && rob == false )
             {
                 rob = true;
 
@@ -294,8 +295,12 @@ int WINAPI WinMain (HINSTANCE Instance,HINSTANCE hPrevInstance,LPSTR lpszArgumen
             }
 
         }
-        Sleep( 200 );
+        Sleep( 10 );
     }
+
+    okno.close();
+
+    thread.terminate();
 
     nid.cbSize = sizeof( NOTIFYICONDATA );
     nid.hWnd = hwnd;
@@ -309,8 +314,6 @@ int WINAPI WinMain (HINSTANCE Instance,HINSTANCE hPrevInstance,LPSTR lpszArgumen
 
     DestroyMenu( menu_tray );
 
-    thread.terminate();
-
     return 0;
 }
 
@@ -319,12 +322,22 @@ LRESULT CALLBACK OnEvent(HWND Handle, UINT Message, WPARAM WParam, LPARAM LParam
     switch (Message)
     {
         case WM_DESTROY:
+            okno.close();
+
+            thread.terminate();
+
+            nid.cbSize = sizeof( NOTIFYICONDATA );
+            nid.hWnd = Handle;
+            nid.uID = ID_TRAY1;
+            nid.uFlags = 0;
+
+            Shell_NotifyIcon( NIM_DELETE, & nid );
+
             DestroyWindow(Handle);
 
             DestroyMenu( menu_tray );
 
-            thread.terminate();
-            return 0;
+            return 1;
 
         case WM_CLOSE:
             if( MessageBox( Handle, "Zamknac aplikacje?", "Zamknac?", MB_YESNO | MB_ICONQUESTION ) == IDNO )
@@ -360,11 +373,22 @@ LRESULT CALLBACK OnEvent(HWND Handle, UINT Message, WPARAM WParam, LPARAM LParam
             }
             if( WParam == 1 )
             {
+                okno.close();
+
+                thread.terminate();
+
+                nid.cbSize = sizeof( NOTIFYICONDATA );
+                nid.hWnd = Handle;
+                nid.uID = ID_TRAY1;
+                nid.uFlags = 0;
+
+                Shell_NotifyIcon( NIM_DELETE, & nid );
+
                 DestroyWindow(Handle);
 
                 DestroyMenu( menu_tray );
 
-                thread.terminate();
+                return 1;
             }
             if( (HWND)LParam == przyciskp )
             {
